@@ -1,0 +1,29 @@
+<a href="/profile"><button>Perfíl</button></a> <a href="/logout"><button>Logout</button></a>
+<h1>Bienvenido {{user.name}}. {{!-- Estás logueado como: {{user.role}} --}}</h1>
+<h2>Nuestros Productos</h2>
+<div>
+    {{#each payload}}
+    <div>
+        <h3>{{this.name}}</h3>
+        <p>Categoría: {{this.category}}</p>
+        <p>Descripción: {{this.description}}</p>
+        <p>Precio: ${{this.price}}</p>
+        <p>Stock: {{this.stock}}</p>
+        <p>Disponible: {{this.status}}</p>
+        
+        <button id="btn-agregar">Agregar al Carrito</button>
+    </div>
+    {{/each}}
+
+    {{#if hasPrevPage}}
+    <a href="/?limit={{limit}}&page={{prevPage}}&sort={{sort}}&category={{category}}"><button>Anterior</button></a>
+    {{/if}}
+
+    {{#if hasNextPage}}
+    <a href="/?limit={{limit}}&page={{nextPage}}&sort={{sort}}&category={{category}}"><button>Siguiente</button></a>
+    {{/if}}
+
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="/js/index.js"></script>
