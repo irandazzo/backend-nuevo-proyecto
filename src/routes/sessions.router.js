@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { userModel } from "../dao/models/users.model.js";
-import { createHast } from "../utils.js";
+import { createHash } from "../utils.js";
 import passport from 'passport';
 
 const sessions = Router();
@@ -33,6 +33,19 @@ sessions.get('/failedlogin', (req, res) => {
     res.send({ status: 'Error', Error: 'Failed login strategy.' })
 });
 
+/* Login con Github */
+sessions.get('/github', passport.authenticate('github', { scope: ['user: email']}), async (req, res) => {});
+
+sessions.get('/githubcallback', passport.authenticate('github', {failureRedirect: '/login'}), async (req, res) => {
+    req.session.user = {
+        name: `${req.user.first_name} ${req.user.last_name}`,
+        email: req.user.email,
+        age: req.user.age,
+        role: 'user'
+    };
+    res.redirect('/');
+});
+
 /* Reset de Contraseña */
 sessions.post('/resetpassword', async (req, res) => {
     const { email, password } = req.body;
@@ -40,7 +53,7 @@ sessions.post('/resetpassword', async (req, res) => {
     const user = await userModel.findOne({ email });
 
     if (!user) return res.status({ status: 'Error', Error: 'Usuario no encontrado'});
-    const newPassword = createHast(password);
+    const newPassword = createHash(password);
     await userModel.updateOne({ _id: user._id }, { $set: { password: newPassword } });
     res.send({ status: 'Success', payload: user, message: 'Contraseña actualizada correctamente.'})
 });

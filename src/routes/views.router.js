@@ -3,7 +3,7 @@ import { productModel } from "../dao/models/products.model.js";
 
 const views = Router();
 
-const userLogged = (req, res, next) => {
+const usuarioLogueado = (req, res, next) => {
     if (!req.session.user) {
         res.redirect('/login');
     } else {
@@ -11,7 +11,7 @@ const userLogged = (req, res, next) => {
     }
 }
 
-views.get('/', userLogged, async (req, res) => {
+views.get('/', usuarioLogueado, async (req, res) => {
     let { page, sort, category, limit } = req.query;
     let sortDirection;
 
@@ -68,7 +68,7 @@ views.get('/login', async (req, res) => {
     res.render('login');
 });
 
-views.get('/profile', userLogged, async (req, res) => {
+views.get('/profile', usuarioLogueado, async (req, res) => {
     res.render('profile', {
         user: req.session.user,
     });
@@ -85,7 +85,7 @@ views.get('/resetpassword', async (req, res) => {
     res.render('resetPassword');
 });
 
-views.get('/realtimeproducts', userLogged, async (req, res) => {
+views.get('/realtimeproducts', usuarioLogueado, async (req, res) => {
     res.render('realTimeProducts', {
         style: 'index.css',
         title: 'Real Time Products',

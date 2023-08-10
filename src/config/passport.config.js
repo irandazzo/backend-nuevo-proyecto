@@ -1,7 +1,9 @@
 import passport from "passport";
 import local from "passport-local";
 import { userModel } from '../dao/models/users.model.js';
-import { createHast, isValidPassword } from "../utils.js";
+import { createHash, isValidPassword } from "../utils.js";
+import GitHubStrategy from 'passport-github2';
+
 
 const LocalStrategy = local.Strategy;
 
@@ -20,17 +22,41 @@ const initializePassport = () => {
                     last_name,
                     email,
                     age,
-                    password: createHast(userPassword)
+                    password: createHash(userPassword)
                 }
                 let result = await userModel.create(newUser);
                 return done(null, result);
             } catch (error) {
-                return done('Hubo un error en tu usuario ' + error);
+                return done('Hubo un error en tu usuario' + error);
             }
         }
     ));
 
-
+    passport.use('github', new GitHubStrategy({
+        clientID: "Iv1.f507b43688478f47",
+        clientSecret: "e484c85b014433339c71024f20f1e3b6ce6fb099", 
+        callbackURL: "http://localhost:8080/api/sessions/githubcallback"
+    }, async (accessToken, refreshToken, profile, done) =>{
+        try {
+            let user = await userModel.findOne({email:profile._json.email});
+            if (!user){
+                let newUser = {
+                    first_name: profile._json.name,
+                    last_name: '',
+                    email: profile._json.email,
+                    age: '',
+                    password: ''
+                }
+                console.log(newUser);
+                let result = await userModel.create(newUser);
+                return done(null, result);
+            }else{
+                return done(null, user);
+            }
+        }catch(error){
+            return done('Hubo un error al intentar buscar tu usuario ' + error);
+        }
+    }))
     passport.use('login', new LocalStrategy({ passReqToCallback: true, usernameField: 'email' }, async (req, username, password, done) => {
         try {
             let role = 'user';
