@@ -8,8 +8,8 @@ const usuarioLogueado = (req, res, next) => {
         res.redirect('/login');
     } else {
         next();
-    }
-}
+    };
+};
 
 views.get('/', usuarioLogueado, async (req, res) => {
     let { page, sort, category, limit } = req.query;
@@ -74,6 +74,11 @@ views.get('/profile', usuarioLogueado, async (req, res) => {
     });
 });
 
+views.get('/current', async(req, res) =>{
+    res.render('current', {
+        user:req.session.user
+    });
+});
 views.get('/logout', async (req, res) => {
     req.session.destroy(error => {
         if (!error) res.render('login');

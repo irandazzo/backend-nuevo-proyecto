@@ -3,7 +3,7 @@ import local from "passport-local";
 import { userModel } from '../dao/models/users.model.js';
 import { createHash, isValidPassword } from "../utils.js";
 import GitHubStrategy from 'passport-github2';
-
+import config from "./config.js";
 
 const LocalStrategy = local.Strategy;
 
@@ -22,7 +22,9 @@ const initializePassport = () => {
                     last_name,
                     email,
                     age,
-                    password: createHash(userPassword)
+                    password: createHash(userPassword),
+                    cart: null,
+                    role: 'user'
                 }
                 let result = await userModel.create(newUser);
                 return done(null, result);
@@ -33,9 +35,12 @@ const initializePassport = () => {
     ));
 
     passport.use('github', new GitHubStrategy({
-        clientID: "Iv1.f507b43688478f47",
+        clientID: config.GITHUB_CLIENT_ID,
+        clientSecret: config.GITHUB_CLIENT_SECRET, 
+        callbackURL: config.GITHUB_CALLBACK_URL
+        /* clientID: "Iv1.f507b43688478f47",
         clientSecret: "e484c85b014433339c71024f20f1e3b6ce6fb099", 
-        callbackURL: "http://localhost:8080/api/sessions/githubcallback"
+        callbackURL: "http://localhost:8080/api/sessions/githubcallback" */
     }, async (accessToken, refreshToken, profile, done) =>{
         try {
             let user = await userModel.findOne({email:profile._json.email});
@@ -45,7 +50,9 @@ const initializePassport = () => {
                     last_name: '',
                     email: profile._json.email,
                     age: '',
-                    password: ''
+                    password: '',
+                    cart: null,
+                    role:'user'
                 }
                 console.log(newUser);
                 let result = await userModel.create(newUser);
@@ -60,6 +67,9 @@ const initializePassport = () => {
     passport.use('login', new LocalStrategy({ passReqToCallback: true, usernameField: 'email' }, async (req, username, password, done) => {
         try {
             let role = 'user';
+            if(username === `${config.ADMIN_EMAIL}` && password === `${config.ADMIN_PASS}`){
+                role = 'admin'
+            }
             const user = await userModel.findOne({ email: username })
             if (!user) {
                 console.log("El Usuario no existe")
